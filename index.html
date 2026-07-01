@@ -77,6 +77,11 @@
             flex-wrap: wrap;
         }
 
+        /* Esconde o botão de configuração para visitantes comuns */
+        #toggleConfig {
+            display: none;
+        }
+
         button {
             padding: 10px 16px;
             border-radius: 8px;
@@ -310,7 +315,7 @@
 <body>
 
     <div class="info-box" id="instruction-box">
-        <strong>💡 Como alimentar as fotos do Flickr:</strong> Este painel possui dados estruturados da atual legislatura. Para colocar o link exato da imagem do Flickr, clique com o botão direito sobre a foto no álbum, selecione <em>"Copiar endereço da imagem"</em> e substitua o campo <code>photo</code> no array do código JavaScript abaixo.
+        <strong>💡 Modo Administrador Ativo:</strong> Se você está vendo o botão de engrenagem, o seu navegador foi autenticado com sucesso como administrador. Visitantes comuns não possuem acesso a esta interface de customização.
     </div>
 
     <header>
@@ -420,6 +425,24 @@
             });
         }
 
+        // Validação de acesso Administrativo via URL Parameter (?admin=gerente123)
+        function verificarAcessoAdmin() {
+            const chaveSecreta = "gerente123"; 
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenUrl = urlParams.get('admin');
+
+            if (tokenUrl === chaveSecreta || localStorage.getItem('adminAutenticado') === 'true') {
+                document.getElementById('toggleConfig').style.display = 'inline-flex';
+                localStorage.setItem('adminAutenticado', 'true');
+                
+                // Exibe a caixinha de instrução superior informativa apenas para o administrador
+                document.getElementById('instruction-box').style.display = 'block';
+            } else {
+                // Mantém oculta para usuários convencionais
+                document.getElementById('instruction-box').style.display = 'none';
+            }
+        }
+
         window.hideSenator = id => { if(!hiddenSenators.includes(id)) { hiddenSenators.push(id); save(); } };
         window.unhideSenator = id => { hiddenSenators = hiddenSenators.filter(x => x !== id); save(); };
         window.clearAllHidden = () => { hiddenSenators = []; save(); };
@@ -440,7 +463,11 @@
             document.documentElement.setAttribute('data-theme', t);
         });
 
-        initFilters(); renderGrid(); renderHiddenList();
+        // Inicialização estruturada do sistema
+        initFilters(); 
+        renderGrid(); 
+        renderHiddenList(); 
+        verificarAcessoAdmin();
     </script>
 </body>
 </html>
